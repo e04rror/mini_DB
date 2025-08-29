@@ -1,38 +1,43 @@
 #ifndef BUFFER_H
 #define BUFFER_H
 
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <stdint.h> // for use of uint32, 64 and different data types
+#include <stdio.h>  // for use of different input/output functions (stdin, stdout, file etc)
+#include <stdlib.h> // malloc, size_t, ssize_t 
+#include <string.h> // especially for strncmp and other function that work with array of char (string)
 
-#define COLUMN_USERNAME_SIZE 32
-#define COLUMN_EMAIL_SIZE 255
-#define size_of_attribute(Struct, Attribute) sizeof(((Struct*)0)->Attribute)
-#define TABLE_MAX_PAGES 100
+#define COLUMN_USERNAME_SIZE 32                                              // how long (max size) the name should be
+#define COLUMN_EMAIL_SIZE 255                                                // how long (max size) the email should be
+#define size_of_attribute(Struct, Attribute) sizeof(((Struct*)0)->Attribute) // this is macross: get the size of the element(in bytes)
+#define TABLE_MAX_PAGES 100                                                  // setting the border value (in the future it will be changed)
 
+// this structure is needed for good using of value from geline function
+// like the value that it is return (data size and etc)
 typedef struct {
   char* buffer;
   size_t buffer_length;
   ssize_t input_length;
 } InputBuffer;
 
+// for command like exit from program or unrecognized command 
 typedef enum {
   META_COMMAND_SUCCESS,
   META_COMMAND_UNRECOGNIZED_COMMAND
 } MetaCommandResult;
 
-
-
+// for checking if user enter a "valid" statement (command) (good, don't know the command, there is an error in the command)
 typedef enum { 
   PREPARE_SUCCESS, 
   PREPARE_SYNTAX_ERROR,
   PREPARE_UNRECOGNIZED_STATEMENT
 } PrepareResult;
 
+// for checking if operation execute good or not(for checking the status of the operation)
 typedef enum { EXECUTE_SUCCESS, EXECUTE_TABLE_FULL } ExecuteResult;
 
+// this enumerartion is needed for selection and checking which operation user want to execute
 typedef enum { STATEMENT_INSERT, STATEMENT_SELECT } StatementType;
+
 
 typedef struct {
   uint32_t id;

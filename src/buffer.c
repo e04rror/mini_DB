@@ -12,6 +12,8 @@ const uint32_t PAGE_SIZE = 4096;
 const uint32_t ROWS_PER_PAGE = PAGE_SIZE / ROW_SIZE;
 const uint32_t TABLE_MAX_ROWS = ROWS_PER_PAGE * TABLE_MAX_PAGES;
 
+// here we simply initialize and prepare the buffer for good using
+// we don't want that our members of the sturcture have some random value (like 19234232 )
 InputBuffer* new_input_buffer() {
   InputBuffer* input_buffer = (InputBuffer*)malloc(sizeof(InputBuffer));
   input_buffer->buffer = NULL;
@@ -21,6 +23,8 @@ InputBuffer* new_input_buffer() {
   return input_buffer;
 }
 
+// here we use a structure and a function getline (stdio, no way man) to get(read) the data 
+// from the user input
 void read_input(InputBuffer* input_buffer) {
   ssize_t bytes_read = getline(&(input_buffer->buffer), &(input_buffer->buffer_length), stdin);
 
@@ -29,6 +33,7 @@ void read_input(InputBuffer* input_buffer) {
     exit(EXIT_FAILURE);
   }
 
+  // get rid of the '\n' (enter) in the buffer
   input_buffer->input_length = bytes_read - 1;
   input_buffer->buffer[bytes_read - 1] = 0;
 }
@@ -40,6 +45,7 @@ void close_input_buffer(InputBuffer* input_buffer){
   free(input_buffer);
 }
 
+// simple function that just check if there is some meta command (.***)
 MetaCommandResult do_meta_command(InputBuffer* input_buffer) {
   if (strcmp(input_buffer->buffer, ".exit") == 0) {
     close_input_buffer(input_buffer);
@@ -48,6 +54,7 @@ MetaCommandResult do_meta_command(InputBuffer* input_buffer) {
     return META_COMMAND_UNRECOGNIZED_COMMAND;
   }
 }
+
 
 PrepareResult prepare_statement(InputBuffer* input_buffer,
                                  Statement* statement) {
