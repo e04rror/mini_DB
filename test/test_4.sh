@@ -20,7 +20,7 @@ output=$(echo "$command" | ./mini-db)
 
 #if diff <(echo "$output") <(echo "$EXPECTED"); then
 if [[ "$output" == "$EXPECTED" ]]; then 
-  echo "Test3: 0. Good."
+  echo "Test4: 0. Good."
 else
-  echo -e "Test3: 1. Bad.\n Got: $output"
+  echo -e "Test4: 1. Bad.\nGot: $output"
 fi
