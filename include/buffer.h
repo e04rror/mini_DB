@@ -1,10 +1,13 @@
 #ifndef BUFFER_H
 #define BUFFER_H
 
+#include <errno.h>
+#include <fcntl.h>
 #include <stdint.h> // for use of uint32, 64 and different data types
 #include <stdio.h>  // for use of different input/output functions (stdin, stdout, file etc)
 #include <stdlib.h> // malloc, size_t, ssize_t 
 #include <string.h> // especially for strncmp and other function that work with array of char (string)
+#include <unistd.h>
 
 #define COLUMN_USERNAME_SIZE 32                                              // how long (max size) the name should be
 #define COLUMN_EMAIL_SIZE 255                                                // how long (max size) the email should be
@@ -52,10 +55,15 @@ typedef struct {
   Row row_to_insert; 
 } Statement;
 
+typedef struct {
+  int file_descriptor;
+  uint32_t file_length;
+  void *pages[TABLE_MAX_PAGES];
+} Pager;
 
 typedef struct {
+  Pager *pager;
   uint32_t num_rows;
-  void* pages[TABLE_MAX_PAGES];
 } Table;
 
 InputBuffer* new_input_buffer();
@@ -64,7 +72,7 @@ void read_input(InputBuffer* input_buffer);
 
 void close_input_buffer(InputBuffer* input_buffer);
 
-MetaCommandResult do_meta_command(InputBuffer* input_buffer);
+MetaCommandResult do_meta_command(InputBuffer* input_buffer, Table* table);
 
 PrepareResult prepare_insert(InputBuffer* input_buffer, Statement* statement);
 
@@ -78,9 +86,13 @@ void* row_slot(Table* table, uint32_t row_num);
 
 void print_row(Row* row);
 
-Table* new_table();
+Pager* pager_open(const char* filename);
+
+Table* db_open(const char* filename);
 
 void free_table(Table* table);
+
+void* get_page(Pager* pager, uint32_t page_num);
 
 ExecuteResult execute_insert(Statement* statement, Table* table);
 
@@ -88,4 +100,7 @@ ExecuteResult execute_select(Statement* statement, Table* table);
 
 ExecuteResult execute_statement(Statement* statement, Table* table);
 
+void pager_flush(Pager* pager, uint32_t page_num, uint32_t size);
+
+void db_close(Table* table);
 #endif // !BUFFER_H
