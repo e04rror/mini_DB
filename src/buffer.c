@@ -1,6 +1,7 @@
 #include "buffer.h"
 #include <stdint.h>
 #include <stdlib.h>
+#include <string.h>
 
 const uint32_t ID_SIZE = size_of_attribute(Row, id);
 const uint32_t USERNAME_SIZE = size_of_attribute(Row, username);
@@ -126,9 +127,10 @@ Pager* pager_open(const char* filename) {
 
   // !!!!!!!!!!!!!!!!!!!!!!!
   // here we can change this for loop on memset 
-  for (uint32_t i = 0; i < TABLE_MAX_PAGES; i++ ) {
+  memset(pager->pages, 0, sizeof(pager->pages));
+  /*for (uint32_t i = 0; i < TABLE_MAX_PAGES; i++ ) {
     pager->pages[i] = NULL;
-  }
+  }*/
 
   return pager;
 }
