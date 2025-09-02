@@ -43,7 +43,6 @@ typedef enum { EXECUTE_SUCCESS, EXECUTE_TABLE_FULL } ExecuteResult;
 // this enumerartion is needed for selection and checking which operation user want to execute
 typedef enum { STATEMENT_INSERT, STATEMENT_SELECT } StatementType;
 
-
 typedef struct {
   uint32_t id;
   char username[COLUMN_USERNAME_SIZE + 1];
@@ -66,6 +65,18 @@ typedef struct {
   uint32_t num_rows;
 } Table;
 
+typedef struct { 
+  Table* table;
+  uint32_t row_num;
+  bool end_of_table; // Indicates a position one past the last element
+} Cursor;
+
+Cursor* table_start(Table* table);
+
+Cursor* table_end(Table* table);
+
+void cursor_advance(Cursor* cursor);
+
 InputBuffer* new_input_buffer();
 
 void read_input(InputBuffer* input_buffer);
@@ -82,7 +93,7 @@ void serialize_row(Row* source, void* destination);
 
 void deserialize_row(void* source, Row* destination);
 
-void* row_slot(Table* table, uint32_t row_num);
+void* cursor_value(Cursor* cursor);
 
 void print_row(Row* row);
 

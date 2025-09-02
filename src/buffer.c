@@ -1,7 +1,4 @@
 #include "buffer.h"
-#include <stdint.h>
-#include <stdlib.h>
-#include <string.h>
 
 const uint32_t ID_SIZE = size_of_attribute(Row, id);
 const uint32_t USERNAME_SIZE = size_of_attribute(Row, username);
@@ -48,24 +45,34 @@ void close_input_buffer(InputBuffer* input_buffer){
   free(input_buffer);
 }
 
+// we check if the user enter the right(valid) statement 
+// by deviding the entire sentence on words (by spaces in simple words)
 PrepareResult prepare_insert(InputBuffer* input_buffer, Statement* statement) {
-  statement->type = STATEMENT_INSERT;
-  // for future let it be commented we will use it later
+  // set statement for the insert
+  statement->type = STATEMENT_INSERT;  // as I understand we need it because later in the main 
+                                       // function we use statement for the right execution (execute_statement(statement, table)) 
+  
+  // using function strtok we devide sentence on the word by spaces 
   char* keyword = strtok(input_buffer->buffer, " ");
   char* id_string = strtok(NULL, " ");
   char* username = strtok(NULL, " ");
   char* email = strtok(NULL, " ");
   
+  // because I use strong checking, where even unused variables or function give an error, I need to do it for avoiding error
+  // I know it would be better if i just disable that that option, but it would be better for me if it will be turn on
   (void)keyword;
   
+  // simple checking if the user enter sentence valid, I mean all option 
   if (id_string == NULL || username == NULL || email == NULL) {
     return PREPARE_SYNTAX_ERROR;
   }
 
   int id = atoi(id_string);
+  // Id cannot be negative
   if (id < 0) {
     return PREPARE_NEGATIVE_ID;
   }
+  // and next two checking the bonds of the input that user enter
   if (strlen(username) > COLUMN_USERNAME_SIZE) {
     return PREPARE_STRING_TOO_LONG;
   }
@@ -73,6 +80,7 @@ PrepareResult prepare_insert(InputBuffer* input_buffer, Statement* statement) {
     return PREPARE_STRING_TOO_LONG;
   }
 
+  // if all the value okay, we set (copy) the value to the structure 
   statement->row_to_insert.id = id;
   strcpy(statement->row_to_insert.username, username);
   strcpy(statement->row_to_insert.email, email);
@@ -80,6 +88,9 @@ PrepareResult prepare_insert(InputBuffer* input_buffer, Statement* statement) {
   return PREPARE_SUCCESS;
 }
 
+// what we do here is "prepare", set the right value for the command that user enter
+// that is, insert -> initialize everything and check if that valid data 
+// select set the statement type for the select 
 PrepareResult prepare_statement(InputBuffer* input_buffer,
                                  Statement* statement) {
   if (strncmp(input_buffer->buffer, "insert", 6) == 0) {
@@ -93,12 +104,21 @@ PrepareResult prepare_statement(InputBuffer* input_buffer,
   return PREPARE_UNRECOGNIZED_STATEMENT;
 }
 
+// okay, I call it raw writing
+// yes, as I understand it take, the destionation (it's a persistant memory, in our case file)
+// and for right structure it's write every data in right position using offsets
+// let's explain by example if our id is 8 bytes, the offset for username will be 8, and the ID_SIZE will be 8 
+// but offset for the ID will be 0 because it is the beggining
+// so we just copy the memory from the structure that is in RAM, into the file, in raw format
+// that is, when we open that file it all will have unrecognized symbols
 void serialize_row(Row* source, void* destination) {
   memcpy(destination + ID_OFFSET, &(source->id), ID_SIZE);
   memcpy(destination + USERNAME_OFFSET, &(source->username), USERNAME_SIZE);
   memcpy(destination + EMAIL_OFFSET, &(source->email), EMAIL_SIZE);
 }
 
+// here the raw reading happening 
+// we take the data from the file(raw data), and set it into the structure
 void deserialize_row(void* source, Row* destination) {
   memcpy(&(destination->id), source + ID_OFFSET, ID_SIZE);
   memcpy(&(destination->username), source + USERNAME_OFFSET, USERNAME_SIZE);
@@ -125,12 +145,7 @@ Pager* pager_open(const char* filename) {
   pager->file_length = file_length;
   
 
-  // !!!!!!!!!!!!!!!!!!!!!!!
-  // here we can change this for loop on memset 
   memset(pager->pages, 0, sizeof(pager->pages));
-  /*for (uint32_t i = 0; i < TABLE_MAX_PAGES; i++ ) {
-    pager->pages[i] = NULL;
-  }*/
 
   return pager;
 }
@@ -188,10 +203,36 @@ void* get_page(Pager* pager, uint32_t page_num) {
   return pager->pages[page_num];
 }
 
-void* row_slot(Table* table, uint32_t row_num) {
+Cursor* table_start(Table* table) {
+  Cursor* cursor = (Cursor*)malloc(sizeof(Cursor));
+  cursor->table = table;
+  cursor->row_num = 0;
+  cursor->end_of_table = (table->num_rows == 0);
+
+  return cursor;
+}
+
+Cursor* table_end(Table* table) {
+  Cursor* cursor = (Cursor*)malloc(sizeof(Cursor));
+  cursor->table = table;
+  cursor->row_num = table->num_rows;
+  cursor->end_of_table = true;
+
+  return cursor;
+}
+
+void cursor_advance(Cursor* cursor) {
+  cursor->row_num += 1;
+  if (cursor->row_num >= cursor->table->num_rows) {
+    cursor->end_of_table = true;
+  }
+}
+
+void* cursor_value(Cursor* cursor) {
+  uint32_t row_num = cursor->row_num;
   uint32_t page_num = row_num / ROWS_PER_PAGE;
   
-  void* page = get_page(table->pager, page_num);
+  void* page = get_page(cursor->table->pager, page_num);
 
   uint32_t row_offset = row_num % ROWS_PER_PAGE;
   uint32_t byte_offset = row_offset * ROW_SIZE;
@@ -208,20 +249,29 @@ ExecuteResult execute_insert(Statement* statement, Table* table) {
   }
 
   Row* row_to_insert = &(statement->row_to_insert);
+  Cursor* cursor = table_end(table);
 
-  serialize_row(row_to_insert, row_slot(table, table->num_rows));
+  serialize_row(row_to_insert, cursor_value(cursor));
   table->num_rows += 1;
-  
+ 
+  free(cursor);
+
   return EXECUTE_SUCCESS;
 }
 
 ExecuteResult execute_select(Statement* statement, Table* table) {
   (void)statement; // mark as intentionally unused
+  Cursor* cursor = table_start(table);
+
   Row row;
-  for (uint32_t i = 0; i < table->num_rows; i++) {
-    deserialize_row(row_slot(table, i), &row);
+  while(!(cursor->end_of_table)) {
+    deserialize_row(cursor_value(cursor), &row);
     print_row(&row);
+    cursor_advance(cursor);
   }
+
+  free(cursor);
+
   return EXECUTE_SUCCESS;
 }
 
