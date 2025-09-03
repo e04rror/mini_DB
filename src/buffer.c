@@ -125,7 +125,10 @@ void deserialize_row(void* source, Row* destination) {
   memcpy(&(destination->email), source + EMAIL_OFFSET, EMAIL_SIZE);
 }
 
+// so this function open the file, check this size
+// and prepare the structure for the work with the data file
 Pager* pager_open(const char* filename) {
+  // open the file
   int fd = open(filename, 
                 O_RDWR |     // read/write mode
                   O_CREAT,  // create file if does not exist 
@@ -138,39 +141,38 @@ Pager* pager_open(const char* filename) {
     exit(EXIT_FAILURE);
   }
 
+  // get the lenght of the file
   off_t file_length = lseek(fd, 0, SEEK_END);
 
+  // create structure Pager and set file descriptor with actual length of the file 
   Pager* pager = (Pager*)malloc(sizeof(Pager));
   pager->file_descriptor = fd;
   pager->file_length = file_length;
   
-
+  // setting all the data inside "pages" to zero
   memset(pager->pages, 0, sizeof(pager->pages));
 
   return pager;
 }
 
+// here we initialize full table 
+// and set value for it
 Table* db_open(const char* filename) {
   
+  // first of all we open the file and initalize the Pager structure
   Pager* pager  = pager_open(filename);
+  // we see, how much rows we get, as I understand we need it to see 
+  // how many rows is already there, i mean wrote 
   uint32_t num_rows = pager->file_length / ROW_SIZE;
   
+  // initialize table and set the value for it
   Table* table = (Table*)malloc(sizeof(Table));
   table->pager = pager;
   table->num_rows = num_rows;
- // for (uint32_t i = 0; i < TABLE_MAX_PAGES; i++) { table->pages[i] = NULL; }
   
   return table;
 }
-// I guess for now let it be like this
-/*
-void free_table(Table* table) {
-  for (int i = 0; table->pages[i]; i++) {
-    free(table->pages[i]);
-  }
-  free(table);
-}
-*/
+
 //get_page
 void* get_page(Pager* pager, uint32_t page_num) {
   if (page_num > TABLE_MAX_PAGES) {
