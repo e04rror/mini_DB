@@ -173,13 +173,18 @@ Table* db_open(const char* filename) {
   return table;
 }
 
-//get_page
+// get_page
+// so as I understand it simply gets the data from "pages"(sturcture pager)
+// and if there is no data in structure, it reads from file 
 void* get_page(Pager* pager, uint32_t page_num) {
+  // simple border check if there is too big page_num
   if (page_num > TABLE_MAX_PAGES) {
     printf("Tried to fetch page number out of bounds. %d > %d\n", page_num, TABLE_MAX_PAGES);
     exit(EXIT_FAILURE);
   }
-
+  
+  // is there is no such pages in the structure
+  // then it should check for that page in the file
   if (pager->pages[page_num] == NULL) {
     // Cache miss. Allocate memory and load from file.
     void* page = malloc(PAGE_SIZE);
@@ -189,7 +194,7 @@ void* get_page(Pager* pager, uint32_t page_num) {
     if (pager->file_length % PAGE_SIZE) {
       num_pages += 1;
     }
-
+    
     if (page_num <= num_pages) {
       lseek(pager->file_descriptor, page_num * PAGE_SIZE, SEEK_SET);
       ssize_t bytes_read = read(pager->file_descriptor, page, PAGE_SIZE);

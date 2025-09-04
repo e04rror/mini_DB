@@ -43,6 +43,7 @@ typedef enum { EXECUTE_SUCCESS, EXECUTE_TABLE_FULL } ExecuteResult;
 // this enumerartion is needed for selection and checking which operation user want to execute
 typedef enum { STATEMENT_INSERT, STATEMENT_SELECT } StatementType;
 
+// the structure of the full row
 typedef struct {
   uint32_t id;
   char username[COLUMN_USERNAME_SIZE + 1];
@@ -114,4 +115,5 @@ ExecuteResult execute_statement(Statement* statement, Table* table);
 void pager_flush(Pager* pager, uint32_t page_num, uint32_t size);
 
 void db_close(Table* table);
+
 #endif // !BUFFER_H
