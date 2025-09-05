@@ -10,9 +10,9 @@
 #include <unistd.h>
 
 #define COLUMN_USERNAME_SIZE 32                                              // how long (max size) the name should be
-#define COLUMN_EMAIL_SIZE 255                                                // how long (max size) the email should be
+#define COLUMN_EMAIL_SIZE    50                                              // how long (max size) the email should be
 #define size_of_attribute(Struct, Attribute) sizeof(((Struct*)0)->Attribute) // this is macross: get the size of the element(in bytes)
-#define TABLE_MAX_PAGES 100                                                  // setting the border value (in the future it will be changed)
+#define TABLE_MAX_PAGES      100                                             // setting the border value (in the future it will be changed)
 
 // this structure is needed for good using of value from geline function
 // like the value that it is return (data size and etc)
