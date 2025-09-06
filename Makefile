@@ -17,6 +17,10 @@ $(BIN): $(OBJS)
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
+clean-objects:
+	@echo "Removing .o files from $(SRC_DIR)"
+	@rm -f $(SRC_DIR)/*.o
+
 clean:
 	rm -rf $(BIN)
 
