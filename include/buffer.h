@@ -67,7 +67,10 @@ typedef enum {
 } PrepareResult;
 
 // for checking if operation execute good or not(for checking the status of the operation)
-typedef enum { EXECUTE_SUCCESS, EXECUTE_TABLE_FULL } ExecuteResult;
+typedef enum { 
+  EXECUTE_SUCCESS,
+  EXECUTE_DUPLICATE_KEY,
+  EXECUTE_TABLE_FULL } ExecuteResult;
 
 // this enumerartion is needed for selection and checking which operation user want to execute
 typedef enum { STATEMENT_INSERT, STATEMENT_SELECT } StatementType;
@@ -103,9 +106,15 @@ typedef struct {
   bool end_of_table; // Indicates a position one past the last element
 } Cursor;
 
+NodeType get_node_type(void* node);
+
+void set_node_type(void* node, NodeType type);
+
 Cursor* table_start(Table* table);
 
-Cursor* table_end(Table* table);
+Cursor* leaf_node_find(Table* table, uint32_t page_num, uint32_t key);
+
+Cursor* table_find(Table* table, uint32_t key);
 
 void cursor_advance(Cursor* cursor);
 
