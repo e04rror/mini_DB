@@ -146,6 +146,8 @@ void free_table(Table* table);
 
 void* get_page(Pager* pager, uint32_t page_num);
 
+void leaf_node_split_and_insert(Cursor* cursor, uint32_t key, Row* value);
+
 void leaf_node_insert(Cursor* cursor, uint32_t key, Row* value);
 
 ExecuteResult execute_insert(Statement* statement, Table* table);
