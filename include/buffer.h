@@ -43,6 +43,16 @@ void print_constants();
 
 void print_leaf_node(void* node);
 
+uint32_t* internal_node_num_keys(void* node);
+
+uint32_t* internal_node_right_child(void* node);
+
+uint32_t* internal_node_cell(void* node, uint32_t child_num);
+
+uint32_t* internal_node_child(void* node, uint32_t child_num);
+
+uint32_t* internal_node_key(void* node, uint32_t key_num);
+
 // this structure is needed for good using of value from geline function
 // like the value that it is return (data size and etc)
 typedef struct {
@@ -126,6 +136,7 @@ void close_input_buffer(InputBuffer* input_buffer);
 
 MetaCommandResult do_meta_command(InputBuffer* input_buffer, Table* table);
 
+
 PrepareResult prepare_insert(InputBuffer* input_buffer, Statement* statement);
 
 PrepareResult prepare_statement(InputBuffer* input_buffer, Statement* statement);
@@ -145,6 +156,8 @@ Table* db_open(const char* filename);
 void free_table(Table* table);
 
 void* get_page(Pager* pager, uint32_t page_num);
+
+void create_new_root(Table* table, uint32_t right_child_page_num);
 
 void leaf_node_split_and_insert(Cursor* cursor, uint32_t key, Row* value);
 
