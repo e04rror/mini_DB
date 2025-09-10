@@ -1,6 +1,7 @@
 #ifndef BUFFER_H
 #define BUFFER_H
 
+#include <stdbool.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <stdint.h> // for use of uint32, 64 and different data types
@@ -10,7 +11,7 @@
 #include <unistd.h>
 
 #define COLUMN_USERNAME_SIZE 32                                              // how long (max size) the name should be
-#define COLUMN_EMAIL_SIZE 70                                             // how long (max size) the email should be
+#define COLUMN_EMAIL_SIZE 255                                             // how long (max size) the email should be
 #define size_of_attribute(Struct, Attribute) sizeof(((Struct*)0)->Attribute) // this is macross: get the size of the element(in bytes)
 #define TABLE_MAX_PAGES 100                                             // setting the border value (in the future it will be changed)
 
@@ -39,9 +40,11 @@ void* leaf_node_value(void* node, uint32_t cell_num);
 
 void initialize_leaf_node(void* node);
 
+void initialize_internal_node(void* node);
+
 void print_constants();
 
-void print_leaf_node(void* node);
+void indent(uint32_t level);
 
 uint32_t* internal_node_num_keys(void* node);
 
@@ -52,6 +55,8 @@ uint32_t* internal_node_cell(void* node, uint32_t child_num);
 uint32_t* internal_node_child(void* node, uint32_t child_num);
 
 uint32_t* internal_node_key(void* node, uint32_t key_num);
+
+uint32_t get_node_max_key(void* node);
 
 // this structure is needed for good using of value from geline function
 // like the value that it is return (data size and etc)
@@ -116,7 +121,13 @@ typedef struct {
   bool end_of_table; // Indicates a position one past the last element
 } Cursor;
 
+bool is_node_root(void* node);
+
+void set_node_root(void* node, bool is_root);
+
 NodeType get_node_type(void* node);
+
+void print_tree(Pager* pager, uint32_t page_num, uint32_t indentation_level);
 
 void set_node_type(void* node, NodeType type);
 

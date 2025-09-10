@@ -1,7 +1,7 @@
 BIN     := mini-db
 
 CC      := gcc
-CFLAGS  := -g -Wall -Wextra -Iinclude
+CFLAGS  := -g -Wextra -Iinclude
 
 SRC_DIR := src
 #INC_DIR := include 
