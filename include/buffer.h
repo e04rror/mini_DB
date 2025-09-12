@@ -135,6 +135,8 @@ Cursor* table_start(Table* table);
 
 Cursor* leaf_node_find(Table* table, uint32_t page_num, uint32_t key);
 
+Cursor* internal_node_find(Table* table, uint32_t page_num, uint32_t key);
+
 Cursor* table_find(Table* table, uint32_t key);
 
 void cursor_advance(Cursor* cursor);

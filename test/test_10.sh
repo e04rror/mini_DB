@@ -28,7 +28,8 @@ expected+=$'  - leaf (size 7)\n'
 for i in {8..14}; do 
   expected+=$"    - $i"$'\n'
 done
-expected+=$'db > Need to implement searching an internal node'
+expected+=$'db > Executed.\n'
+expected+=$'db > '
 
 diff -u <(printf "%s" "$output") <(printf "%s" "$expected")
 
